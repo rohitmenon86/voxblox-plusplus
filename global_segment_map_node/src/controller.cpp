@@ -677,36 +677,50 @@ void Controller::resetMeshIntegrators() {
 bool Controller::resetMapCallback(std_srvs::Empty::Request& /*request*/,
                                   std_srvs::Empty::Response& /*request*/) {
   // Reset counters and flags.
-  integrated_frames_count_ = 0u;
-  received_first_message_ = false;
+  try
   {
-    std::lock_guard<std::mutex> label_tsdf_layers_lock(
-        label_tsdf_layers_mutex_);
+    integrated_frames_count_ = 0u;
+    received_first_message_ = false;
+    {
+      std::lock_guard<std::mutex> label_tsdf_layers_lock(
+          label_tsdf_layers_mutex_);
 
-    map_.reset(new LabelTsdfMap(map_config_));
-    integrator_.reset(new LabelTsdfIntegrator(
-        tsdf_integrator_config_, label_tsdf_integrator_config_, map_.get()));
+      map_.reset(new LabelTsdfMap(map_config_));
+      integrator_.reset(new LabelTsdfIntegrator(
+          tsdf_integrator_config_, label_tsdf_integrator_config_, map_.get()));
+    }
+    // Clear the mesh layers.
+    {
+      std::lock_guard<std::mutex> mesh_layer_lock(mesh_layer_mutex_);
+
+      if(mesh_label_layer_ != NULL)
+        mesh_label_layer_->clear();
+      
+      if(mesh_semantic_layer_ != NULL)
+        mesh_semantic_layer_->clear();
+      
+      if(mesh_instance_layer_ != NULL)
+        mesh_instance_layer_->clear();
+      
+      if(mesh_merged_layer_ != NULL)
+        mesh_merged_layer_->clear();
+
+      resetMeshIntegrators();
+      need_full_remesh_ = true;
+    }
+
+    // Clear segments to be integrated from the last frame.
+    segment_merge_candidates_.clear();
+    segment_label_candidates.clear();
+    for (Segment* segment : segments_to_integrate_) {
+      delete segment;
+    }
+    segments_to_integrate_.clear();
   }
-  // Clear the mesh layers.
+  catch(...)
   {
-    std::lock_guard<std::mutex> mesh_layer_lock(mesh_layer_mutex_);
-
-    mesh_label_layer_->clear();
-    mesh_semantic_layer_->clear();
-    mesh_instance_layer_->clear();
-    mesh_merged_layer_->clear();
-
-    resetMeshIntegrators();
-    need_full_remesh_ = true;
-  }
-
-  // Clear segments to be integrated from the last frame.
-  segment_merge_candidates_.clear();
-  segment_label_candidates.clear();
-  for (Segment* segment : segments_to_integrate_) {
-    delete segment;
-  }
-  segments_to_integrate_.clear();
+    ROS_ERROR("Error resetting vpp map");
+  }  
 
   return true;
 }
@@ -1193,6 +1207,7 @@ bool Controller::getListInstancePointcloudsCallback(
   sensor_msgs::PointCloud2 integrated_pointcloud_msg;
   for (const InstanceLabel instance_label : instance_labels) 
   {
+    LOG(INFO)<<"Instance Label: "<<instance_label;
     auto it = instance_label_to_layers.find(instance_label);
     CHECK(it != instance_label_to_layers.end())
         << "Layers for instance label " << instance_label
@@ -1223,7 +1238,7 @@ bool Controller::getListInstancePointcloudsCallback(
     instance_pc_msg_with_centroid.centroid.z = centroid(2);
 
     instance_pc_msg_with_centroid.num_points = instance_pointcloud->size();
-
+    instance_pc_msg_with_centroid.instance_id = instance_label;
     response.instance_clouds_with_centroid.push_back(instance_pc_msg_with_centroid);
 
     *integrated_pointcloud += *instance_pointcloud;
