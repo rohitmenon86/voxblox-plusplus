@@ -49,6 +49,7 @@ Segment::Segment(
     : T_G_C_(T_G_C),
       semantic_label_(point_cloud.points[0].semantic_label),
       instance_label_(point_cloud.points[0].instance_label) {
+  LOG(INFO)<<"Instance label: "<<int(instance_label_);
   points_C_.reserve(point_cloud.points.size());
   colors_.reserve(point_cloud.points.size());
 
