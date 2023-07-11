@@ -1,10 +1,12 @@
 <launch>
-  <arg name="scene_name" default="scenenet" />
-  <arg name="visualize" default="true" />
+  <arg name="scene_name" default="sweet_pepper" />
+  <arg name="visualize" default="false" />
 
-  <!--launch-prefix="taskset -c 3 gdb -ex run"-->
+  <arg name="debug" default="true" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg if="$(arg debug)"     name="launch_prefix" value="gdb -ex run --args" />
 
-  <node name="gsm_node" pkg="gsm_node" type="gsm_node"  output="screen"> 
+  <node name="gsm_node" pkg="gsm_node" type="gsm_node"  output="screen" launch-prefix="$(arg launch_prefix)"> 
     <rosparam command="load" file="$(find gsm_node)/cfg/default.yaml" />
     <rosparam command="load" file="$(find gsm_node)/cfg/$(arg scene_name).yaml" />
     <param name="meshing/visualize" value="$(arg visualize)" />

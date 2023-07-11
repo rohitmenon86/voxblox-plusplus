@@ -5,7 +5,7 @@
 
   <include file="$(find depth_segmentation)/launch/semantic_depth_segmentation.launch">
     <arg name="sensor_name" value="$(arg sensor_name)" />
-    <arg name="visualize" value="$(arg visualize)" />
+    <arg name="visualize" value="false" />
   </include>
 
   <include file="$(find gsm_node)/launch/gsm_node.launch">
