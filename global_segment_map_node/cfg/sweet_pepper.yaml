@@ -1,18 +1,18 @@
-world_frame_id: "world"
+world_frame_id: "trolley_local_link"
 
 voxblox:
-  voxel_size: 0.008
-  truncation_distance_factor: 5.0
+  voxel_size: 0.004
+  truncation_distance_factor: 1.3
   voxel_carving_enabled: true
-  max_ray_length_m: 3.0
+  max_ray_length_m: 1.5
 
 semantic_instance_segmentation:
   enable_semantic_instance_segmentation: true
 
 meshing:
   visualize: false
-  update_mesh_every_n_sec: 2.0
-  publish_scene_mesh: false
+  update_mesh_every_n_sec: 5.0
+  publish_scene_mesh: true
   visualizer_parameters:
     camera_position: [-1.41162,    6.28602,   -0.300336,
                       -1.49346,    0.117437,   0.0843885,

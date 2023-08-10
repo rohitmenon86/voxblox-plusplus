@@ -3,21 +3,21 @@ world_frame_id: "world"
 use_label_propagation: true
 
 voxblox:
-  voxel_size: 0.008
+  voxel_size: 0.004
   voxels_per_side: 64
-  truncation_distance_factor: 3.0
+  truncation_distance_factor: 1.8
   voxel_carving_enabled: false
   min_ray_length_m: 0.04
-  max_ray_length_m: 4.0
+  max_ray_length_m: 2.0
 
 gsm:
-  min_label_voxel_count: 10
+  min_label_voxel_count: 1000
   label_propagation_td_factor: 1.0
 
 pairwise_confidence_merging:
   enable_pairwise_confidence_merging: true
-  merging_min_overlap_ratio: 0.4
-  merging_min_frame_count: 3
+  merging_min_overlap_ratio: 0.2
+  merging_min_frame_count: 2
 
 semantic_instance_segmentation:
   enable_semantic_instance_segmentation: true
@@ -40,8 +40,8 @@ meshing:
 
 icp:
   enable_icp: false
-  keep_track_of_icp_correction: true
-
+  keep_track_of_icp_correction: true   
+  
 debug:
   verbose_log: false
   multiple_visualizers: false
