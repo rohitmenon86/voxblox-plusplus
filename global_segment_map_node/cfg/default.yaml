@@ -7,17 +7,17 @@ voxblox:
   voxels_per_side: 64
   truncation_distance_factor: 1.8
   voxel_carving_enabled: false
-  min_ray_length_m: 0.04
+  min_ray_length_m: 0.07
   max_ray_length_m: 2.0
 
 gsm:
-  min_label_voxel_count: 1000
+  min_label_voxel_count: 3000
   label_propagation_td_factor: 1.0
 
 pairwise_confidence_merging:
   enable_pairwise_confidence_merging: true
   merging_min_overlap_ratio: 0.2
-  merging_min_frame_count: 2
+  merging_min_frame_count: 1
 
 semantic_instance_segmentation:
   enable_semantic_instance_segmentation: true
