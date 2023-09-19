@@ -17,7 +17,7 @@ gsm:
 pairwise_confidence_merging:
   enable_pairwise_confidence_merging: true
   merging_min_overlap_ratio: 0.2
-  merging_min_frame_count: 1
+  merging_min_frame_count: 2
 
 semantic_instance_segmentation:
   enable_semantic_instance_segmentation: true

@@ -1226,13 +1226,21 @@ bool Controller::getListInstancePointcloudsCallback(
     instance_pointcloud->header.frame_id = world_frame_;
     std::shared_ptr<std::vector<int>> indices(new std::vector<int>);
     pcl::removeNaNFromPointCloud(*instance_pointcloud, *instance_pointcloud, *indices);
-    if(instance_pointcloud->points.size() < 20)
+    if(instance_pointcloud->points.size() < 200)
+    {
+      ROS_WARN_STREAM("Instance cloud has points "<<instance_pointcloud->points.size() <<" less than than 200. Hence discarding");
       continue;
+    }
     vpp_msgs::InstancePointcloudwithCentroid instance_pc_msg_with_centroid;
     pcl::toROSMsg(*instance_pointcloud, instance_pc_msg_with_centroid.pointcloud);
 
     Eigen::Vector4f centroid;
     pcl::compute3DCentroid(*instance_pointcloud, centroid);
+    if(centroid(1)> 0.8  || centroid(1) < 0.3)
+    {
+      ROS_WARN_STREAM("Instance cloud has centroid y coordinate "<<centroid(1)<<" outside limits of 0.3 to 0.8. Hence discarding");
+      continue;
+    }
     instance_pc_msg_with_centroid.centroid.x = centroid(0);
     instance_pc_msg_with_centroid.centroid.y = centroid(1);
     instance_pc_msg_with_centroid.centroid.z = centroid(2);
