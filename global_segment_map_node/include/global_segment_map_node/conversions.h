@@ -74,7 +74,7 @@ inline void fillBoundingBoxTfMsg(std::string world_frame,
   bbox_tf->transform.rotation.w = bbox_quaternion.w();
 }
 
-inline void convertVoxelGridToPointCloud(
+inline bool convertVoxelGridToPointCloud(
     const voxblox::Layer<voxblox::TsdfVoxel>& tsdf_voxels,
     const MeshIntegratorConfig& mesh_config,
     pcl::PointCloud<pcl::PointSurfel>* surfel_cloud) {
@@ -85,6 +85,12 @@ inline void convertVoxelGridToPointCloud(
   io::convertLayerToMesh(tsdf_voxels, mesh_config, &mesh, kConnectedMesh);
 
   surfel_cloud->reserve(mesh.vertices.size());
+
+  if(mesh.vertices.size() < 200)
+  {
+    ROS_WARN("Mesh layer has too few points. Hence discarding...");
+    return false;
+  }
 
   size_t vert_idx = 0u;
   for (const voxblox::Point& vert : mesh.vertices) {
@@ -116,6 +122,8 @@ inline void convertVoxelGridToPointCloud(
   surfel_cloud->is_dense = true;
   surfel_cloud->width = surfel_cloud->points.size();
   surfel_cloud->height = 1u;
+
+  return true;
 }
 
 }  // namespace voxblox_gsm

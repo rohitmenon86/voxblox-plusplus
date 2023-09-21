@@ -1219,9 +1219,11 @@ bool Controller::getListInstancePointcloudsCallback(
     pcl::PointCloud<pcl::PointSurfel>::Ptr instance_pointcloud(
         new pcl::PointCloud<pcl::PointSurfel>);
 
-    convertVoxelGridToPointCloud(segment_tsdf_layer, mesh_config_,
+    bool valid_mesh = convertVoxelGridToPointCloud(segment_tsdf_layer, mesh_config_,
                                 instance_pointcloud.get());
 
+    if(valid_mesh == false)
+      continue;
 
     instance_pointcloud->header.frame_id = world_frame_;
     std::shared_ptr<std::vector<int>> indices(new std::vector<int>);
@@ -1236,9 +1238,9 @@ bool Controller::getListInstancePointcloudsCallback(
 
     Eigen::Vector4f centroid;
     pcl::compute3DCentroid(*instance_pointcloud, centroid);
-    if(centroid(1)> 0.8  || centroid(1) < 0.3)
+    if(centroid(1)> 0.9  || centroid(1) < 0.3)
     {
-      ROS_WARN_STREAM("Instance cloud has centroid y coordinate "<<centroid(1)<<" outside limits of 0.3 to 0.8. Hence discarding");
+      ROS_WARN_STREAM("Instance cloud has centroid y coordinate "<<centroid(1)<<" outside limits of 0.3 to 0.9. Hence discarding");
       continue;
     }
     instance_pc_msg_with_centroid.centroid.x = centroid(0);
