@@ -330,6 +330,22 @@ Controller::Controller(ros::NodeHandle* node_handle_private)
   node_handle_private_->param<std::string>("meshing/mesh_filename",
                                            mesh_filename_, mesh_filename_);
 
+  node_handle_private_->param<int>("pepper_params/minimum_size",
+                                           pepper_params_.min_size, 200);
+  
+  node_handle_private_->param<float>("pepper_params/centroid_x_min",
+                                           pepper_params_.centroid_x_min, 0.3);
+  node_handle_private_->param<float>("pepper_params/centroid_x_max",
+                                           pepper_params_.centroid_x_max, 1.3); 
+  node_handle_private_->param<float>("pepper_params/centroid_y_min",
+                                           pepper_params_.centroid_y_min, 0.3);
+  node_handle_private_->param<float>("pepper_params/centroid_y_max",
+                                           pepper_params_.centroid_y_max, 0.9); 
+  node_handle_private_->param<float>("pepper_params/centroid_z_min",
+                                           pepper_params_.centroid_z_min, 0.1);
+  node_handle_private_->param<float>("pepper_params/centroid_z_max",
+                                           pepper_params_.centroid_z_max, 1.0);                                
+
   //timer_scene_pc_ = node_handle_private_->createTimer(ros::Duration(4.0), &Controller::timerGetScenePointCloud, this);
   list_instance_clouds_pub_ = node_handle_private_->advertise<vpp_msgs::InstancePointcloudwithCentroidArray>("list_instance_pointclouds", 1, true);
 }
@@ -1220,7 +1236,7 @@ bool Controller::getListInstancePointcloudsCallback(
         new pcl::PointCloud<pcl::PointSurfel>);
 
     bool valid_mesh = convertVoxelGridToPointCloud(segment_tsdf_layer, mesh_config_,
-                                instance_pointcloud.get());
+                                instance_pointcloud.get(), pepper_params_.min_size);
 
     if(valid_mesh == false)
       continue;
@@ -1228,9 +1244,9 @@ bool Controller::getListInstancePointcloudsCallback(
     instance_pointcloud->header.frame_id = world_frame_;
     std::shared_ptr<std::vector<int>> indices(new std::vector<int>);
     pcl::removeNaNFromPointCloud(*instance_pointcloud, *instance_pointcloud, *indices);
-    if(instance_pointcloud->points.size() < 200)
+    if(instance_pointcloud->points.size() < pepper_params_.min_size)
     {
-      ROS_WARN_STREAM("Instance cloud has points "<<instance_pointcloud->points.size() <<" less than than 200. Hence discarding");
+      ROS_WARN_STREAM("Instance cloud has points "<<instance_pointcloud->points.size() <<" less than than "<<pepper_params_.min_size<<". Hence discarding");
       continue;
     }
     vpp_msgs::InstancePointcloudwithCentroid instance_pc_msg_with_centroid;
@@ -1238,9 +1254,9 @@ bool Controller::getListInstancePointcloudsCallback(
 
     Eigen::Vector4f centroid;
     pcl::compute3DCentroid(*instance_pointcloud, centroid);
-    if(centroid(1)> 0.9  || centroid(1) < 0.3)
+    if(centroid(0)> pepper_params_.centroid_x_max  || centroid(0) < pepper_params_.centroid_x_min || centroid(1)> pepper_params_.centroid_y_max  || centroid(1) < pepper_params_.centroid_y_min || centroid(2)> pepper_params_.centroid_z_max  || centroid(2) < pepper_params_.centroid_z_min)
     {
-      ROS_WARN_STREAM("Instance cloud has centroid y coordinate "<<centroid(1)<<" outside limits of 0.3 to 0.9. Hence discarding");
+      ROS_WARN_STREAM("Instance cloud has centroid coordinates "<<centroid<<" outside limits. Hence discarding");
       continue;
     }
     instance_pc_msg_with_centroid.centroid.x = centroid(0);

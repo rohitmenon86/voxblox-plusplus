@@ -31,6 +31,17 @@ namespace voxblox_gsm {
 
 typedef std::pair<Layer<TsdfVoxel>, Layer<LabelVoxel>> LayerPair;
 
+struct PepperParams
+{
+    int min_size;
+    float centroid_x_min;
+    float centroid_x_max;
+    float centroid_y_min;
+    float centroid_y_max;
+    float centroid_z_min;
+    float centroid_z_max;
+};
+
 class Controller {
  public:
   Controller(ros::NodeHandle* node_handle);
@@ -217,6 +228,8 @@ class Controller {
   bool multiple_visualizers_;
 
   ros::Timer timer_scene_pc_;
+
+  PepperParams pepper_params_;
 };
 
 }  // namespace voxblox_gsm

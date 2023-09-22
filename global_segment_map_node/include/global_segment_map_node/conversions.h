@@ -77,7 +77,7 @@ inline void fillBoundingBoxTfMsg(std::string world_frame,
 inline bool convertVoxelGridToPointCloud(
     const voxblox::Layer<voxblox::TsdfVoxel>& tsdf_voxels,
     const MeshIntegratorConfig& mesh_config,
-    pcl::PointCloud<pcl::PointSurfel>* surfel_cloud) {
+    pcl::PointCloud<pcl::PointSurfel>* surfel_cloud, int mesh_vertices_min_size = 200) {
   CHECK_NOTNULL(surfel_cloud);
 
   static constexpr bool kConnectedMesh = false;
@@ -86,7 +86,7 @@ inline bool convertVoxelGridToPointCloud(
 
   surfel_cloud->reserve(mesh.vertices.size());
 
-  if(mesh.vertices.size() < 200)
+  if(mesh.vertices.size() < mesh_vertices_min_size)
   {
     ROS_WARN("Mesh layer has too few points. Hence discarding...");
     return false;
