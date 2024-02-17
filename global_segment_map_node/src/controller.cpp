@@ -128,7 +128,7 @@ namespace voxblox_gsm {
 //                            "hair drier",
 //                            "toothbrush"};
 
-std::string classes[2] = {"background", "pepper"};
+std::string classes[4] = {"background", "pepper", "stem", "peduncle"};
 
 
 Controller::Controller(ros::NodeHandle* node_handle_private)
