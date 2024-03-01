@@ -11,7 +11,7 @@ voxblox:
   max_ray_length_m: 1.3
 
 gsm:
-  min_label_voxel_count: 3000
+  min_label_voxel_count: 2000
   label_propagation_td_factor: 1.0
 
 pairwise_confidence_merging:
@@ -40,7 +40,7 @@ meshing:
 
 icp:
   enable_icp: false
-  keep_track_of_icp_correction: true   
+  keep_track_of_icp_correction: false   
   
 debug:
   verbose_log: false
