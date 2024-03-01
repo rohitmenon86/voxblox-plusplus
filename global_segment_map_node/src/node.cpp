@@ -58,10 +58,18 @@ int main(int argc, char** argv) {
   ros::ServiceServer save_segments_as_mesh_srv;
   controller->advertiseSaveSegmentsAsMeshService(&save_segments_as_mesh_srv);
 
+  ros::ServiceServer enable_gsm_srv;
+  controller->advertiseEnableService(&enable_gsm_srv);
+  ros::ServiceServer disable_gsm_srv;
+  controller->advertiseDisableService(&disable_gsm_srv);
+
   ros::ServiceServer extract_instances_srv;
   ros::ServiceServer get_list_semantic_instances_srv;
   ros::ServiceServer get_instance_bounding_box_srv;
   ros::ServiceServer get_list_instance_pointclouds_srv;
+  ros::ServiceServer get_tsdf_map_srv;
+  
+
 
   if (controller->enable_semantic_instance_segmentation_) {
     controller->advertiseIntgeratedInstanceCloudTopic();
@@ -72,7 +80,11 @@ int main(int argc, char** argv) {
         &get_instance_bounding_box_srv);
     controller->advertiseGetListInstancePointcloudsService(
         &get_list_instance_pointclouds_srv);
+    controller->advertiseGetTSDFMapService(
+        &get_tsdf_map_srv);
   }
+
+
 
   // Spinner that uses a number of threads equal to the number of cores.
   ros::AsyncSpinner spinner(0);

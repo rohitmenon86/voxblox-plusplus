@@ -38,6 +38,8 @@
 #include <pcl/filters/conditional_removal.h>
 #include <pcl/kdtree/impl/kdtree_flann.hpp>
 
+#include <voxblox_ros/conversions_inl.h>
+
 #ifdef APPROXMVBB_AVAILABLE
 #include <ApproxMVBB/ComputeApproxMVBB.hpp>
 #endif
@@ -499,6 +501,33 @@ void Controller::advertiseGetListInstancePointcloudsService(
       &Controller::getListInstancePointcloudsCallback, this);
 }
 
+void Controller::advertiseGetTSDFMapService(
+      ros::ServiceServer* get_tsdf_map_srv)
+{
+  CHECK_NOTNULL(get_tsdf_map_srv);
+  *get_tsdf_map_srv = node_handle_private_->advertiseService(
+      "get_tsdf_map_srv",
+      &Controller::getTSDFLayerCallback, this);
+}
+
+void Controller::advertiseEnableService(
+      ros::ServiceServer* enable_gsm_srv)
+{
+  CHECK_NOTNULL(enable_gsm_srv);
+  *enable_gsm_srv = node_handle_private_->advertiseService(
+      "enable_gsm_srv",
+      &Controller::enableServiceCallback, this);
+}
+
+void Controller::advertiseDisableService(
+      ros::ServiceServer* disable_gsm_srv)
+{
+  CHECK_NOTNULL(disable_gsm_srv);
+  *disable_gsm_srv = node_handle_private_->advertiseService(
+      "disable_gsm_srv",
+      &Controller::disableServiceCallback, this);
+}
+
 void Controller::processSegment(
     const sensor_msgs::PointCloud2::Ptr& segment_point_cloud_msg) {
   // Look up transform from camera frame to world frame.
@@ -638,6 +667,8 @@ void Controller::integrateFrame(ros::Time msg_timestamp) {
 void Controller::segmentPointCloudCallback(
     const sensor_msgs::PointCloud2::Ptr& segment_point_cloud_msg) {
   //LOG(INFO)<<"segmentPointCloudCallback";    
+  if(!enable_gsm_)
+    return;
   if (!integration_on_) {
     return;
   }
@@ -1274,5 +1305,29 @@ bool Controller::getListInstancePointcloudsCallback(
   integrated_instancecloud_pub_->publish(integrated_pointcloud_msg);
   return true;
 }
+
+bool Controller::getTSDFLayerCallback(vpp_msgs::GetTsdfMap::Request& req,
+                                      vpp_msgs::GetTsdfMap::Response& res)
+{
+  //voxblox_msgs::Layer layer_msg;
+  voxblox::serializeLayerAsMsg<TsdfVoxel>(map_->getTsdfLayer(),
+                                   false, &res.voxblox_map);
+  return true;
+}
+
+bool Controller::enableServiceCallback(std_srvs::Empty::Request& req,
+                    std_srvs::Empty::Response& res)
+{
+  enable_gsm_ = true;
+  return true;
+}
+
+bool Controller::disableServiceCallback(std_srvs::Empty::Request& req,
+                    std_srvs::Empty::Response& res)
+{
+  enable_gsm_ = false;
+  return true;
+}
+
 }  // namespace voxblox_gsm
 }  // namespace voxblox

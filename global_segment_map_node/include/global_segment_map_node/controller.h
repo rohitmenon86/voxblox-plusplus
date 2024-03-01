@@ -25,6 +25,7 @@
 #include <vpp_msgs/GetMap.h>
 #include <vpp_msgs/GetScenePointcloud.h>
 #include <vpp_msgs/GetListInstancePointclouds.h>
+#include <vpp_msgs/GetTsdfMap.h>
 
 namespace voxblox {
 namespace voxblox_gsm {
@@ -88,9 +89,20 @@ class Controller {
   void advertiseGetListInstancePointcloudsService(
       ros::ServiceServer* get_list_instance_pointclouds_srv);
 
+  void advertiseGetTSDFMapService(
+      ros::ServiceServer* get_tsdf_map_srv);
+
+  void advertiseEnableService(
+      ros::ServiceServer* enable_gsm_srv);
+
+  void advertiseDisableService(
+      ros::ServiceServer* disable_gsm_srv);
+
   void timerGetScenePointCloud(const ros::TimerEvent& event);
 
   bool enable_semantic_instance_segmentation_;
+
+  bool enable_gsm_ = false;
 
   bool publish_scene_map_;
   bool publish_scene_mesh_;
@@ -141,6 +153,14 @@ class Controller {
       vpp_msgs::GetListInstancePointclouds::Request& request,
       vpp_msgs::GetListInstancePointclouds::Response& response);
 
+  bool getTSDFLayerCallback(vpp_msgs::GetTsdfMap::Request& req,
+                    vpp_msgs::GetTsdfMap::Response& res);
+
+  bool enableServiceCallback(std_srvs::Empty::Request& req,
+                    std_srvs::Empty::Response& res);
+
+  bool disableServiceCallback(std_srvs::Empty::Request& req,
+                    std_srvs::Empty::Response& res);
 
   bool lookupTransform(const std::string& from_frame,
                        const std::string& to_frame, const ros::Time& timestamp,
