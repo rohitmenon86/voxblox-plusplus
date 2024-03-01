@@ -693,6 +693,8 @@ void Controller::resetMeshIntegrators() {
 bool Controller::resetMapCallback(std_srvs::Empty::Request& /*request*/,
                                   std_srvs::Empty::Response& /*request*/) {
   // Reset counters and flags.
+
+  ROS_WARN("VPP: Attempting to reset map");
   try
   {
     integrated_frames_count_ = 0u;
@@ -732,6 +734,7 @@ bool Controller::resetMapCallback(std_srvs::Empty::Request& /*request*/,
       delete segment;
     }
     segments_to_integrate_.clear();
+    ROS_WARN("VPP: Map resetted");
   }
   catch(...)
   {
