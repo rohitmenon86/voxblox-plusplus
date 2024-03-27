@@ -304,7 +304,7 @@ Controller::Controller(ros::NodeHandle* node_handle_private)
     visualizer_ =
         new Visualizer(mesh_layers, &mesh_layer_updated_, &mesh_layer_mutex_,
                        camera_position, clip_distances, save_visualizer_frames);
-    viz_thread_ = std::thread(&Visualizer::visualizeMesh, visualizer_);
+    //viz_thread_ = std::thread(&Visualizer::visualizeMesh, visualizer_);
   }
 
   node_handle_private_->param<bool>("publishers/publish_scene_map",
@@ -356,6 +356,7 @@ Controller::~Controller() { viz_thread_.join(); }
 
 void Controller::subscribeSegmentPointCloudTopic(
     ros::Subscriber* segment_point_cloud_sub) {
+
   CHECK_NOTNULL(segment_point_cloud_sub);
   std::string segment_point_cloud_topic =
       "/depth_segmentation_node/object_segment";
@@ -372,6 +373,19 @@ void Controller::subscribeSegmentPointCloudTopic(
       &Controller::segmentPointCloudCallback, this);
 }
 
+void Controller::subscribeControlGSMTopic(
+  ros::Subscriber* control_gsm_sub)  
+{
+  CHECK_NOTNULL(control_gsm_sub);
+  std::string control_gsm_topic =
+      "/gsm_node/control";
+  node_handle_private_->param<std::string>("control_gsm_topic",
+                                           control_gsm_topic,
+                                           control_gsm_topic);
+  *control_gsm_sub = node_handle_private_->subscribe(
+      control_gsm_topic, 1,
+      &Controller::controlGSMCallback, this);
+}
 void Controller::timerGetScenePointCloud(const ros::TimerEvent& event)
 {
   // vpp_msgs::GetScenePointcloud srv_scene_cloud;
@@ -664,11 +678,14 @@ void Controller::integrateFrame(ros::Time msg_timestamp) {
   LOG(INFO) << "Timings: " << std::endl << timing::Timing::Print() << std::endl;
 }
 
-void Controller::segmentPointCloudCallback(
+void Controller:: (
     const sensor_msgs::PointCloud2::Ptr& segment_point_cloud_msg) {
   //LOG(INFO)<<"segmentPointCloudCallback";    
-  if(!enable_gsm_)
+  if(control_gsm_.load() == false)
+  {
+    ROS_WARN_THROTTLE(2.0, "GSM Not Enabled");
     return;
+  }
   if (!integration_on_) {
     return;
   }
@@ -692,6 +709,12 @@ void Controller::segmentPointCloudCallback(
   processSegment(segment_point_cloud_msg);
   ros::Duration(0.02).sleep();
 }
+
+void Controller::controlGSMCallback(
+    const std_msgs::Bool::Ptr& control_gsm_msg) {
+    ROS_INFO_STREAM_THROTTLE(1.0, "Recd control gsm msg: "<<int(control_gsm_msg->data));
+    control_gsm_.store(control_gsm_msg->data);
+  }
 
 void Controller::resetMeshIntegrators() {
   label_tsdf_mesh_config_.color_scheme =
@@ -1318,14 +1341,16 @@ bool Controller::getTSDFLayerCallback(vpp_msgs::GetTsdfMap::Request& req,
 bool Controller::enableServiceCallback(std_srvs::Empty::Request& req,
                     std_srvs::Empty::Response& res)
 {
-  enable_gsm_ = true;
+  ROS_WARN_THROTTLE(1.0, "Enabling GSM");
+  control_gsm_.store(true); // = true;
   return true;
 }
 
 bool Controller::disableServiceCallback(std_srvs::Empty::Request& req,
                     std_srvs::Empty::Response& res)
 {
-  enable_gsm_ = false;
+  ROS_WARN_THROTTLE(1.0, "Disabling GSM");
+  control_gsm_.store(false); 
   return true;
 }
 

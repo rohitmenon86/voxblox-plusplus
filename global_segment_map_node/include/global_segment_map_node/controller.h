@@ -27,6 +27,10 @@
 #include <vpp_msgs/GetListInstancePointclouds.h>
 #include <vpp_msgs/GetTsdfMap.h>
 
+#include <memory>
+#include <std_msgs/Bool.h>
+#include <atomic>
+
 namespace voxblox {
 namespace voxblox_gsm {
 
@@ -51,6 +55,9 @@ class Controller {
 
   void subscribeSegmentPointCloudTopic(
       ros::Subscriber* segment_point_cloud_sub);
+
+  void subscribeControlGSMTopic(
+      ros::Subscriber* control_gsm_sub);
 
   void advertiseMapTopic();
 
@@ -104,6 +111,8 @@ class Controller {
 
   bool enable_gsm_ = false;
 
+  std::atomic_bool control_gsm_ = false;
+
   bool publish_scene_map_;
   bool publish_scene_mesh_;
   bool publish_object_bbox_;
@@ -124,6 +133,9 @@ class Controller {
 
   virtual void segmentPointCloudCallback(
       const sensor_msgs::PointCloud2::Ptr& segment_point_cloud_msg);
+
+  virtual void controlGSMCallback(
+      const std_msgs::Bool::Ptr& control_gsm_msg);
 
   bool getMapCallback(vpp_msgs::GetMap::Request& /* request */,
                       vpp_msgs::GetMap::Response& response);

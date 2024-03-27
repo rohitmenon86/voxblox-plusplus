@@ -33,6 +33,10 @@ int main(int argc, char** argv) {
   ros::Subscriber segment_point_cloud_sub;
   controller->subscribeSegmentPointCloudTopic(&segment_point_cloud_sub);
 
+  ros::Subscriber control_gsm_sub;
+  controller->subscribeControlGSMTopic(&control_gsm_sub);
+
+
   if (controller->publish_scene_map_) {
     controller->advertiseMapTopic();
   }
